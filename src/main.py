@@ -1,6 +1,8 @@
+from matplotlib import figure
 import pandas as pd
 import sys
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 COLUMN_ALIAS = {
     "日付" : "date",
@@ -37,8 +39,42 @@ def main():
 
     date_sorted_df = df.groupby("date", as_index=False)[["sales", "amount"]].sum()
 
-    print(date_sorted_df.head())
 
+
+    output_df = date_sorted_df
+
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+
+    fig = fig.set_size_inches((12, 7))
+    
+
+    sns.set_theme(style="whitegrid")
+
+    plt.tight_layout()
+    plt.subplots_adjust(
+    left=0.1,
+    right=0.9,
+    top=0.95,
+    bottom=0.12
+    )
+    
+    plt.xticks(rotation=45, ha="right")
+
+    sns.barplot(data=output_df, x="date", y="amount", ax=ax1)
+
+    sns.lineplot(data=output_df, x="date", y="sales", ax=ax2, marker="o")
+
+    plt.legend(loc="upper left", frameon=False)
+
+    plt.show()
+
+    plt.savefig("graph.png")
+    plt.close()
+
+    output_df = output_df.rename(columns=lambda c: COLUMN_OUTPUT.get(c, c))
+
+    print(output_df.head())
 
 
 # run
