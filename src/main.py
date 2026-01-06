@@ -1,6 +1,8 @@
+# main.py
+
+import sys
 from matplotlib import rcParams
 import pandas as pd
-import sys
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -28,7 +30,7 @@ COLUMN_OUTPUT = {
 def logger(log : str):
     print(log)
 
-def input():
+def Input():
     try:
         path=''
         if "--input" in sys.argv:
@@ -38,7 +40,7 @@ def input():
         sys.exit()
     return path
 
-def output():
+def Output():
     try:
         path='graph.png'
         if "--output" in sys.argv:
@@ -49,13 +51,13 @@ def output():
     return path
 
 
-def debug_mode():
+def DebugMode():
     isDebug = False
     if "--debug" in sys.argv:
         isDebug = True
     return isDebug
 
-def dataframe_sort(path : str ='./sample/data.xlsx'):
+def SotrFromDate(path : str ='./sample/data.xlsx'):
     try:
         df = pd.DataFrame(pd.read_excel(path))
     except:
@@ -65,12 +67,12 @@ def dataframe_sort(path : str ='./sample/data.xlsx'):
     df = df.rename(columns=lambda c: COLUMN_ALIAS.get(c, c))
 
     date_sorted_df = df.groupby("date", as_index=False)[["sales", "amount"]].sum()
-    if (debug_mode()):
+    if (DebugMode()):
         logger(date_sorted_df)
     return date_sorted_df
 
 
-def make_image(df=[[]], output_path='graph.png', title="売上高"):
+def MakeImage(df=[[]], output_path='graph.png', title="売上高"):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
 
@@ -108,7 +110,7 @@ def make_image(df=[[]], output_path='graph.png', title="売上高"):
     plt.savefig(output_path)
 
 
-    if (debug_mode()):
+    if (DebugMode()):
         plt.show()
 
     plt.close()
@@ -117,9 +119,13 @@ def make_image(df=[[]], output_path='graph.png', title="売上高"):
 
 
 # test
-def debug():
-    df = dataframe_sort(input())
-    make_image(df, output())
+def Debug():
+    df = SotrFromDate(Input())
+    MakeImage(df, Output())
+
+def MakeGraph(input, output):
+    df = SotrFromDate(input)
+    MakeImage(df, output)
 
 def main():
     print("未実装")
@@ -130,4 +136,4 @@ def main():
 
 # run
 if __name__ == "__main__":
-    debug()
+    Debug()
