@@ -1,4 +1,4 @@
-from matplotlib import figure
+from matplotlib import rcParams
 import pandas as pd
 import sys
 import seaborn as sns
@@ -25,24 +25,52 @@ COLUMN_OUTPUT = {
     "category" : "カテゴリ"
 }
 
-# test
-def main():
+def logger(log : str):
+    print(log)
 
-    path='./sample/data.xlsx'
+def input():
+    try:
+        path=''
+        if "--input" in sys.argv:
+            path = sys.argv[sys.argv.index("--input") + 1]
+    except:
+        logger("読み込み先ファイルパスが存在しません")
+        sys.exit()
+    return path
 
-    if "--input" in sys.argv:
-        path = sys.argv[sys.argv.index("--input") + 1]
+def output():
+    try:
+        path='graph.png'
+        if "--output" in sys.argv:
+            path = sys.argv[sys.argv.index("--output") + 1]
+    except:
+        logger("保存先ファイルパスが存在しません")
+        sys.exit()
+    return path
 
-    df = pd.DataFrame(pd.read_excel(path))
+
+def debug_mode():
+    isDebug = False
+    if "--debug" in sys.argv:
+        isDebug = True
+    return isDebug
+
+def dataframe_sort(path : str ='./sample/data.xlsx'):
+    try:
+        df = pd.DataFrame(pd.read_excel(path))
+    except:
+        logger("ファイルが存在しません")
+        sys.exit()
 
     df = df.rename(columns=lambda c: COLUMN_ALIAS.get(c, c))
 
     date_sorted_df = df.groupby("date", as_index=False)[["sales", "amount"]].sum()
+    if (debug_mode()):
+        logger(date_sorted_df)
+    return date_sorted_df
 
 
-
-    output_df = date_sorted_df
-
+def make_image(df=[[]], output_path='graph.png', title="売上高"):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
 
@@ -51,32 +79,55 @@ def main():
 
     sns.set_theme(style="whitegrid")
 
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meirio', 'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
+
     plt.tight_layout()
     plt.subplots_adjust(
-    left=0.1,
-    right=0.9,
-    top=0.95,
-    bottom=0.12
+    left=0.07,
+    right=0.93,
+    top=0.9,
+    bottom=0.1
     )
     
     plt.xticks(rotation=45, ha="right")
 
-    sns.barplot(data=output_df, x="date", y="amount", ax=ax1)
+    try:
+        ax1.set_ylabel("件数")
+        ax2.set_ylabel("売上")
 
-    sns.lineplot(data=output_df, x="date", y="sales", ax=ax2, marker="o")
+        ax1.set_xlabel("日付け")
+    except:
+        logger("フォントが存在しません")
 
-    plt.legend(loc="upper left", frameon=False)
+    sns.barplot(data=df, x="date", y="amount", ax=ax1)
 
-    plt.show()
+    sns.lineplot(data=df, x="date", y="sales", ax=ax2, marker="o")
 
-    plt.savefig("graph.png")
+    plt.title(title)
+    plt.savefig(output_path)
+
+
+    if (debug_mode()):
+        plt.show()
+
     plt.close()
 
-    output_df = output_df.rename(columns=lambda c: COLUMN_OUTPUT.get(c, c))
+    df = df.rename(columns=lambda c: COLUMN_OUTPUT.get(c, c))
 
-    print(output_df.head())
+
+# test
+def debug():
+    df = dataframe_sort(input())
+    make_image(df, output())
+
+def main():
+    print("未実装")
+    
+
+    
 
 
 # run
 if __name__ == "__main__":
-    main()
+    debug()
